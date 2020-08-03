@@ -1,0 +1,216 @@
+<!doctype html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body { font: 12px Arial;}
+ 
+path { 
+  stroke: steelblue;
+  stroke-width: 2;
+  fill: none;
+}
+ 
+.axis path,
+.axis line {
+	fill: none;
+	stroke: grey;
+	stroke-width: 1;
+	shape-rendering: crispEdges;
+}
+
+.bold{
+  font-weight: bold;
+}
+button{
+    height:20px; 
+    width:100px; 
+}
+
+</style>
+
+<html lang="en">
+<head>
+ 
+
+
+</head>
+
+<body>
+
+  <h1 style="text-align: center;">The East Human Development Index</h1>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <div style="float:right;">
+      <b style="font-size: 30px">Eastern HDI statistics</b>
+      <p id="avgHDI" style="text-align: center; font-size: 20px;" class="">Average eastern HDI increase annual:</p>
+    
+      <p id="avgChinaHDI" style="text-align: center; font-size: 20px; color: orange;">Average China increase annualy:</p>
+      <p id="avgRussiaHDI" style="text-align: center; font-size: 20px; color: brown;">Average Russian increase annualy:</p>
+      <p id="avgJapanHDI" style="text-align: center; font-size: 20px; color: purple;">Average Japan increase annualy:</p>
+      
+    </div>
+
+    
+    
+   
+  <script src="js/scripts.js"></script>
+ 
+
+  <script src="https://code.jquery.com/jquery-git.js"></script>
+  <script> 
+
+$('#right-Image').css('background-image',
+ 'url("https://www.w3resource.com/includes/jquery-images/jquery.gif")');
+
+  const timeConv = d3.timeParse("%Y");
+   var margin = {top: 20, right: 20, bottom: 30, left: 100},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+    
+    var x = d3.scaleTime().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+
+
+    var svg = d3.select("body").append("svg")
+    .attr("class","svgGraph")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+  
+
+ d3.csv("https://raw.githubusercontent.com/jadd123/Narrative-Visualization/master/data.csv")
+.then(function(data) {
+
+  data.forEach(function(d) {
+      d.Year = timeConv(+d.Year);
+      d.HumanDevelopmentIndex = +d.HumanDevelopmentIndex;
+  });
+
+  
+
+  var ChinaData = data.filter(function(obj) {
+    return (obj.Entity === "China" && obj.HumanDevelopmentIndex != 0 && obj.Year >= 1980);
+}); 
+
+var ChinaFirstHDI = ChinaData.find(x => x.Year.getFullYear() === 1980).HumanDevelopmentIndex;
+var ChinaLastHDI = ChinaData.find(x => x.Year.getFullYear() === 2017).HumanDevelopmentIndex;
+
+var avgChinaHDIIncrease = ((ChinaLastHDI - ChinaFirstHDI)/ChinaFirstHDI)*100;
+console.log(avgChinaHDIIncrease);
+
+var RussiaData = data.filter(function(obj) {
+    return (obj.Entity === "Russia" && obj.HumanDevelopmentIndex != 0 && obj.Year >= 1980);
+});
+
+var RussiaFirstHDI = RussiaData.find(x => x.Year.getFullYear() === 1990).HumanDevelopmentIndex;
+var RussiaLastHDI = RussiaData.find(x => x.Year.getFullYear() === 2017).HumanDevelopmentIndex;
+
+var avgRussiaHDIIncrease = ((RussiaLastHDI - RussiaFirstHDI)/RussiaFirstHDI)*100;
+console.log(avgRussiaHDIIncrease);
+
+var JapanData = data.filter(function(obj) {
+    return (obj.Entity === "Japan" && obj.HumanDevelopmentIndex != 0 && obj.Year >= 1980);
+}); 
+
+var JapanFirstHDI = JapanData.find(x => x.Year.getFullYear() === 1980).HumanDevelopmentIndex;
+var JapanLastHDI = JapanData.find(x => x.Year.getFullYear() === 2017).HumanDevelopmentIndex;
+
+var avgJapanHDIIncrease = ((JapanLastHDI - JapanFirstHDI)/JapanFirstHDI)*100;
+console.log(avgJapanHDIIncrease);
+
+var avgHDI = (avgChinaHDIIncrease + avgRussiaHDIIncrease + avgJapanHDIIncrease)/3
+
+$("#avgHDI").text($("#avgHDI").text() +" "+ avgHDI);
+$("#avgChinaHDI").text($("#avgChinaHDI").text() +" "+ avgChinaHDIIncrease);
+$("#avgRussiaHDI").text($("#avgRussiaHDI").text() +" "+ avgRussiaHDIIncrease);
+$("#avgJapanHDI").text($("#avgJapanHDI").text() +" "+ avgJapanHDIIncrease);
+
+ChinaData.sort((a,b) => (a.Year > b.Year) ? 1 : ((b.Year > a.Year) ? -1 : 0)); 
+RussiaData.sort((a,b) => (a.Year > b.Year) ? 1 : ((b.Year > a.Year) ? -1 : 0)); 
+JapanData.sort((a,b) => (a.Year > b.Year) ? 1 : ((b.Year > a.Year) ? -1 : 0)); 
+
+
+  const line = d3.line()
+    .x(function(d) {  return x(d.Year); })
+    .y(function(d) {  return y(d.HumanDevelopmentIndex); });
+
+x.domain([(1980), d3.max(data, function(d){
+    return d.Year}
+    )]
+    );
+
+y.domain([(0.3), d3.max(data, function(d) {
+    
+        return d.HumanDevelopmentIndex; 
+        })
+    ]);
+
+    svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.right)
+    .attr("x", 0 - (height / 2))
+    .style("text-anchor", "middle")
+    .style("font-size", "13px");
+
+    svg.append("path")
+      .data([ChinaData])
+      .attr("class", "ChinaLine")
+      .style("stroke", "orange")
+      .attr("d", line);
+
+    svg.append("path")
+      .data([RussiaData])
+      .attr("class", "RussiaLine")
+      .style("stroke", "brown")
+      .attr("d", line);
+
+    svg.append("path")
+      .data([JapanData])
+      .attr("class", "JapanLine")
+      .style("stroke", "purple")
+      .attr("d", line);
+
+    svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+    svg.append("g")
+    .call(d3.axisLeft(y));
+
+    svg.append("circle").attr("cx",700).attr("cy",190).attr("r", 6).style("fill", "orange");
+    svg.append("circle").attr("cx",700).attr("cy",220).attr("r", 6).style("fill", "brown");
+    svg.append("circle").attr("cx",700).attr("cy",250).attr("r", 6).style("fill", "purple");
+    svg.append("text").attr("x", 720).attr("y", 190).text("China").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 720).attr("y", 220).text("Russia").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 720).attr("y", 250).text("Japan").style("font-size", "15px").attr("alignment-baseline","middle");
+    svg.append("text").attr("x", 300).attr("y", 50).text("Human development index by year").style("font-size", "15px").style("font-style", "italic").attr("alignment-baseline","middle");
+     
+ });
+  
+
+
+</script>
+</br>
+</br>
+</br>
+</br>
+<div style="text-align: center; font-size: 15px">
+  <p><b>Here we find Japan starting very strong but there isn't much progress in HDI, additionally Russia progress is minimal and 
+      they even take a dip as soon as as see data</br> but they eventually rally around 1999. China on the other hand makes a leap 
+      like no other we've seen so far, even though China make huge gains in terms of HDI, </br>
+      they are still unable to achieve the HDI of the other teo eastern countries. One may commend China for this immense increase in HDI
+    but we should also consider </br>how low they were on the spectrum just a few decades ago, the Chinese quality of life was very poor in the 
+    past few decades.</b></p>
+</div>
+<button onclick="window.location.href='WestNarrativeVisualization.html';">
+    Back
+  </button>
+<button onclick="window.location.href='UserControlledCombined.html';">
+    Next
+  </button>
+</body>
+</html>
